@@ -8,7 +8,20 @@ class FavoritePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Favorit Saya')),
+      appBar: AppBar(
+        title: const Text('Favorit Saya'),
+        actions: [
+          // Consumer: tombol ikut rebuild saat jumlah favorit berubah
+          Consumer<FavoriteProvider>(
+            builder: (context, favorite, child) => TextButton.icon(
+              icon: const Icon(Icons.delete_sweep_outlined),
+              label: const Text('Hapus semua'),
+              // null = tombol nonaktif ketika daftar favorit kosong
+              onPressed: favorite.count == 0 ? null : () => _confirmClear(context),
+            ),
+          ),
+        ],
+      ),
       body: Consumer<FavoriteProvider>(
         builder: (context, favorite, child) {
           if (favorite.count == 0) {
@@ -35,5 +48,30 @@ class FavoritePage extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _confirmClear(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Hapus semua favorit?'),
+        content: const Text('Semua resep akan dihapus dari daftar favorit.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    // clear() hanya dipanggil kalau pengguna menekan "Hapus"
+    if (confirmed == true && context.mounted) {
+      context.read<FavoriteProvider>().clear();
+    }
   }
 }
