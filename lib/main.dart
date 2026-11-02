@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:resepku/pages/home_page.dart';
-import 'package:resepku/providers/favorite_provider.dart';
 import 'package:resepku/widgets/identity_footer.dart';
 
+// PERTANYAAN ANALISIS 3 (sengaja salah):
+// ChangeNotifierProvider dipindah dari main() ke dalam HomePage.
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => FavoriteProvider()),
-      ],
-      child: const ResepKuApp(),
-    ),
-  );
+  runApp(const ResepKuApp());
 }
 
 class ResepKuApp extends StatelessWidget {
