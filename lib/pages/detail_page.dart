@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:resepku/models/recipe.dart';
+import 'package:resepku/providers/favorite_provider.dart';
 
 class DetailPage extends StatefulWidget {
   const DetailPage({super.key, required this.recipe});
@@ -33,11 +35,18 @@ class _DetailPageState extends State<DetailPage> {
   Widget build(BuildContext context) {
     final recipe = widget.recipe;
     final totalCalories = recipe.caloriesPerServing * _servings;
+    final isFavorite = context.watch<FavoriteProvider>().isFavorite(recipe);
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(recipe.name),
+        actions: [
+          IconButton(
+            icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+            onPressed: () => context.read<FavoriteProvider>().toggle(recipe),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

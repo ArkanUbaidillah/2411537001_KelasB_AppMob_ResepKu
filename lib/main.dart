@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:resepku/pages/home_page.dart';
+import 'package:resepku/providers/favorite_provider.dart';
 import 'package:resepku/widgets/identity_footer.dart';
 
 void main() {
-  runApp(const ResepKuApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => FavoriteProvider()),
+      ],
+      child: const ResepKuApp(),
+    ),
+  );
 }
 
 class ResepKuApp extends StatelessWidget {
@@ -15,7 +24,7 @@ class ResepKuApp extends StatelessWidget {
       title: 'ResepKu',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(colorSchemeSeed: Colors.deepOrange),
-      builder: (context, child) => IdentityFooter(child: child!), // footer NIM & nama
+      builder: (context, child) => IdentityFooter(child: child!), // tetap dipertahankan
       home: const HomePage(),
     );
   }
