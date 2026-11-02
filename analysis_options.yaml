@@ -1,0 +1,16 @@
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Nama file sesuai modul (form-textfield.dart) dan print() dipakai di modul
+    file_names: false
+    avoid_print: false
