@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:resepku/data/dummy_recipes.dart';
 import 'package:resepku/pages/settings_page.dart';
 import 'package:resepku/widgets/favorite_badge_button.dart';
+import 'package:resepku/widgets/recipe_grid_card.dart';
 import 'package:resepku/widgets/recipe_tile.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool _isGrid = false; // ephemeral state: hanya HomePage yang membutuhkan
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +27,11 @@ class HomePage extends StatelessWidget {
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: _isGrid ? 'Tampilan list' : 'Tampilan grid',
+            icon: Icon(_isGrid ? Icons.view_list : Icons.grid_view),
+            onPressed: () => setState(() => _isGrid = !_isGrid),
+          ),
           const FavoriteBadgeButton(),
           // tombol Pengaturan dari Latihan 1 Modul 6 tetap dipertahankan
           IconButton(
@@ -31,12 +44,32 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: dummyRecipes.length,
-        itemBuilder: (context, index) {
-          return RecipeTile(recipe: dummyRecipes[index]);
-        },
+      body: _isGrid ? _buildGrid() : _buildList(),
+    );
+  }
+
+  Widget _buildList() {
+    return ListView.builder(
+      itemCount: dummyRecipes.length,
+      itemBuilder: (context, index) {
+        return RecipeTile(recipe: dummyRecipes[index]);
+      },
+    );
+  }
+
+  Widget _buildGrid() {
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 3 / 4, // lebar : tinggi
       ),
+      itemCount: dummyRecipes.length,
+      itemBuilder: (context, index) {
+        return RecipeGridCard(recipe: dummyRecipes[index]);
+      },
     );
   }
 }
