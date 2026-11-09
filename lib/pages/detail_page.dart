@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:resepku/models/recipe.dart';
 import 'package:resepku/providers/favorite_provider.dart';
+import 'package:resepku/widgets/recipe_image.dart';
 
 class DetailPage extends StatefulWidget {
   const DetailPage({super.key, required this.recipe});
@@ -51,6 +52,14 @@ class _DetailPageState extends State<DetailPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: RecipeImage(url: recipe.image),
+            ),
+          ),
+          const SizedBox(height: 16),
           Text(
             '${recipe.cuisine} • ${recipe.difficulty} • ${recipe.totalTimeMinutes} menit',
             style: textTheme.bodyLarge,
