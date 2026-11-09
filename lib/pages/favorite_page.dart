@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:resepku/providers/favorite_provider.dart';
+import 'package:resepku/widgets/recipe_image.dart';
 
 class FavoritePage extends StatelessWidget {
   const FavoritePage({super.key});
@@ -32,10 +33,42 @@ class FavoritePage extends StatelessWidget {
               ),
             );
           }
-          return ListView(
-            children: [
-              for (final recipe in favorite.items)
-                ListTile(
+          final items = favorite.items;
+          // Latihan 2: separated menyisipkan Divider di antara item
+          return ListView.separated(
+            itemCount: items.length,
+            separatorBuilder: (context, index) => const Divider(height: 1),
+            itemBuilder: (context, index) {
+              final recipe = items[index];
+              return Dismissible(
+                // key unik dan stabil: id resep, bukan index
+                key: ValueKey(recipe.id),
+                direction: DismissDirection.endToStart, // geser ke kiri
+                background: Container(
+                  color: Colors.red,
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                onDismissed: (_) {
+                  favorite.toggle(recipe); // hapus dari favorit
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      SnackBar(
+                        content: Text('${recipe.name} dihapus dari favorit'),
+                      ),
+                    );
+                },
+                child: ListTile(
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: RecipeImage(url: recipe.image, cacheWidth: 168),
+                    ),
+                  ),
                   title: Text(recipe.name),
                   subtitle: Text(recipe.cuisine),
                   trailing: IconButton(
@@ -43,7 +76,8 @@ class FavoritePage extends StatelessWidget {
                     onPressed: () => favorite.toggle(recipe),
                   ),
                 ),
-            ],
+              );
+            },
           );
         },
       ),
