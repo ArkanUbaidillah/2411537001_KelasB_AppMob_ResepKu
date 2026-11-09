@@ -20,6 +20,7 @@ class HomePage extends StatelessWidget {
         ),
         actions: [
           const FavoriteBadgeButton(),
+          // tombol Pengaturan dari Latihan 1 Modul 6 tetap dipertahankan
           IconButton(
             tooltip: 'Pengaturan',
             icon: const Icon(Icons.settings),
@@ -30,10 +31,11 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView(
-        children: [
-          for (final recipe in dummyRecipes) RecipeTile(recipe: recipe),
-        ],
+      body: ListView.builder(
+        itemCount: dummyRecipes.length,
+        itemBuilder: (context, index) {
+          return RecipeTile(recipe: dummyRecipes[index]);
+        },
       ),
     );
   }
