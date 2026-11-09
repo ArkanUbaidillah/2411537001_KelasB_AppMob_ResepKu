@@ -11,7 +11,13 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ResepKu'),
+        title: Row(
+          children: [
+            Image.asset('assets/images/logo.png', height: 32),
+            const SizedBox(width: 8),
+            const Text('ResepKu'),
+          ],
+        ),
         actions: [
           const FavoriteBadgeButton(),
           IconButton(
