@@ -3,6 +3,8 @@
 Project Praktikum Aplikasi Mobile (DIF61145) Kelas B, Departemen Informatika FTI Universitas Andalas.
 Satu project ini dipakai dari Modul 6 sampai Modul 10.
 
+Unit test (Modul 8 Latihan 3): `flutter test test/recipe_service_test.dart`
+
 - Nama: Arkan Ubaidillah Warman
 - NIM: 2411537001
 - Dosen: Arifan Rahman, M.Kom.
@@ -24,6 +26,12 @@ Satu project ini dipakai dari Modul 6 sampai Modul 10.
 | `modul7-latihan1` | Modul 7 Latihan 1: filter cuisine |
 | `modul7-latihan2` | Modul 7 Latihan 2: halaman Favorit lebih rapi |
 | `modul7-latihan3` | Modul 7 Latihan 3 (bonus): SliverAppBar dan cached_network_image |
+| `modul8-A` | Modul 8 Bagian A: package http dan Recipe.fromJson |
+| `modul8-B` | Modul 8 Bagian B: RecipeService, FutureBuilder, ErrorView (Checkpoint 1 dan 2) |
+| `modul8-C` | Modul 8 Bagian C: POST resep baru (Checkpoint 3, tabel uji D.1) |
+| `modul8-latihan1` | Modul 8 Latihan 1: pencarian resep |
+| `modul8-latihan2` | Modul 8 Latihan 2: ubah nama (PUT) dan hapus (DELETE) |
+| `modul8-latihan3` | Modul 8 Latihan 3 (bonus): unit test dengan MockClient |
 
 Untuk membuka kondisi aplikasi di satu langkah: `git checkout <tag>` lalu `flutter run`.
 Kembali ke versi terbaru: `git checkout main`.
