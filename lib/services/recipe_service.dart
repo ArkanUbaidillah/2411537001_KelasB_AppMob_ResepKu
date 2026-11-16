@@ -25,6 +25,29 @@ class RecipeService {
         .toList();
   }
 
+  /// POST /recipes/add — mengirim resep baru.
+  /// dummyjson hanya menyimulasikan penyimpanan: server mengembalikan
+  /// data beserta id baru, tetapi resep tidak benar-benar tersimpan.
+  Future<Recipe> addRecipe({
+    required String name,
+    required String cuisine,
+    required int cookTimeMinutes,
+  }) async {
+    final response = await _client
+        .post(
+          Uri.parse('$_baseUrl/recipes/add'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'name': name,
+            'cuisine': cuisine,
+            'cookTimeMinutes': cookTimeMinutes,
+          }),
+        )
+        .timeout(_timeout);
+    _checkStatus(response);
+    return Recipe.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
   /// Status 2xx berarti berhasil. Selain itu, lempar exception
   /// agar FutureBuilder masuk ke error state.
   void _checkStatus(http.Response response) {

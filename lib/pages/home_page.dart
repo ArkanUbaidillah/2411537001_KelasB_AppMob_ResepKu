@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:resepku/models/recipe.dart';
+import 'package:resepku/pages/add_recipe_page.dart';
 import 'package:resepku/pages/settings_page.dart';
 import 'package:resepku/services/recipe_service.dart';
 import 'package:resepku/widgets/error_view.dart';
@@ -42,6 +43,22 @@ class _HomePageState extends State<HomePage> {
     } catch (_) {
       // error sudah ditampilkan oleh FutureBuilder
     }
+  }
+
+  Future<void> _openAddPage() async {
+    final created = await Navigator.push<Recipe>(
+      context,
+      MaterialPageRoute(builder: (context) => const AddRecipePage()),
+    );
+    if (created == null || !mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '"${created.name}" diterima server dengan id ${created.id}. '
+          'dummyjson hanya menyimulasikan penyimpanan.',
+        ),
+      ),
+    );
   }
 
   @override
@@ -122,6 +139,11 @@ class _HomePageState extends State<HomePage> {
             ],
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Tambah resep',
+        onPressed: _openAddPage,
+        child: const Icon(Icons.add),
       ),
     );
   }
