@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:resepku/models/recipe.dart';
 import 'package:resepku/providers/favorite_provider.dart';
+import 'package:resepku/services/recipe_service.dart';
 
 class DetailPage extends StatefulWidget {
   const DetailPage({super.key, required this.recipe});
@@ -32,6 +33,66 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
 
+  // Latihan 2: ubah nama dengan PUT /recipes/{id}
+  Future<void> _rename() async {
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (context) => _RenameDialog(initialName: widget.recipe.name),
+    );
+    if (newName == null || !mounted) return;
+
+    final service = context.read<RecipeService>();
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final updated = await service.updateRecipe(widget.recipe.id, name: newName);
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text('Nama dari server: ${updated.name}')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('Gagal mengubah: $e')));
+    }
+  }
+
+  // Latihan 2: hapus dengan DELETE /recipes/{id}
+  Future<void> _delete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Hapus resep?'),
+        content: Text('"${widget.recipe.name}" akan dihapus dari server.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final service = context.read<RecipeService>();
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final isDeleted = await service.deleteRecipe(widget.recipe.id);
+      if (!mounted) return;
+      if (isDeleted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('"${widget.recipe.name}" dihapus (isDeleted: true)')),
+        );
+        Navigator.pop(context); // tutup halaman detail
+      }
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text('Gagal menghapus: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final recipe = widget.recipe;
@@ -50,6 +111,29 @@ class _DetailPageState extends State<DetailPage> {
               IconButton(
                 icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
                 onPressed: () => context.read<FavoriteProvider>().toggle(recipe),
+              ),
+              // Latihan 2: menu ubah dan hapus, setelah tombol favorit
+              PopupMenuButton<String>(
+                onSelected: (value) {
+                  if (value == 'rename') _rename();
+                  if (value == 'delete') _delete();
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem(
+                    value: 'rename',
+                    child: ListTile(
+                      leading: Icon(Icons.edit_outlined),
+                      title: Text('Ubah nama'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: ListTile(
+                      leading: Icon(Icons.delete_outline),
+                      title: Text('Hapus'),
+                    ),
+                  ),
+                ],
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -150,6 +234,55 @@ class _DetailPageState extends State<DetailPage> {
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
+    );
+  }
+}
+
+/// Dialog berisi TextField untuk nama baru.
+/// Dibuat sebagai StatefulWidget agar TextEditingController di-dispose
+/// setelah dialog benar-benar ditutup.
+class _RenameDialog extends StatefulWidget {
+  const _RenameDialog({required this.initialName});
+
+  final String initialName;
+
+  @override
+  State<_RenameDialog> createState() => _RenameDialogState();
+}
+
+class _RenameDialogState extends State<_RenameDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialName);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final name = _controller.text.trim();
+    if (name.isEmpty) return;
+    Navigator.pop(context, name);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Ubah nama resep'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: const InputDecoration(labelText: 'Nama baru'),
+        onSubmitted: (_) => _submit(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Batal'),
+        ),
+        FilledButton(onPressed: _submit, child: const Text('Simpan')),
+      ],
     );
   }
 }

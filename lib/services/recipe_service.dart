@@ -63,6 +63,31 @@ class RecipeService {
     return Recipe.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
 
+  /// PUT /recipes/{id} — mengubah nama resep (Latihan 2).
+  /// dummyjson hanya menyimulasikan perubahan.
+  Future<Recipe> updateRecipe(int id, {required String name}) async {
+    final response = await _client
+        .put(
+          Uri.parse('$_baseUrl/recipes/$id'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'name': name}),
+        )
+        .timeout(_timeout);
+    _checkStatus(response);
+    return Recipe.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  /// DELETE /recipes/{id} — menghapus resep (Latihan 2).
+  /// Mengembalikan nilai isDeleted dari respons server.
+  Future<bool> deleteRecipe(int id) async {
+    final response = await _client
+        .delete(Uri.parse('$_baseUrl/recipes/$id'))
+        .timeout(_timeout);
+    _checkStatus(response);
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    return body['isDeleted'] == true;
+  }
+
   /// Status 2xx berarti berhasil. Selain itu, lempar exception
   /// agar FutureBuilder masuk ke error state.
   void _checkStatus(http.Response response) {
