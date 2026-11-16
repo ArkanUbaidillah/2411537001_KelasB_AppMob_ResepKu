@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:resepku/data/dummy_recipes.dart';
+import 'package:provider/provider.dart';
 import 'package:resepku/models/recipe.dart';
 import 'package:resepku/pages/settings_page.dart';
+import 'package:resepku/services/recipe_service.dart';
+import 'package:resepku/widgets/error_view.dart';
 import 'package:resepku/widgets/favorite_badge_button.dart';
 import 'package:resepku/widgets/recipe_grid_card.dart';
 import 'package:resepku/widgets/recipe_tile.dart';
@@ -14,20 +16,36 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _isGrid = false; // ephemeral state: hanya HomePage yang membutuhkan
-  String? _cuisine; // Latihan 1: null berarti semua cuisine
+  bool _isGrid = false;
+  String? _cuisine; // Latihan 1 Modul 7: null berarti semua cuisine
+  late Future<List<Recipe>> _recipesFuture;
 
-  // Daftar cuisine diambil dari data, bukan ditulis manual
-  final List<String> _cuisines =
-      dummyRecipes.map((r) => r.cuisine).toSet().toList();
+  @override
+  void initState() {
+    super.initState();
+    // Future dibuat SEKALI di initState, bukan di build()
+    _recipesFuture = context.read<RecipeService>().fetchRecipes();
+  }
+
+  // Membuat Future baru, lalu setState agar FutureBuilder memakainya
+  void _reload() {
+    setState(() {
+      _recipesFuture = context.read<RecipeService>().fetchRecipes();
+    });
+  }
+
+  // Dipanggil RefreshIndicator saat daftar ditarik ke bawah
+  Future<void> _refresh() async {
+    _reload();
+    try {
+      await _recipesFuture;
+    } catch (_) {
+      // error sudah ditampilkan oleh FutureBuilder
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Resep yang sudah difilter, dipakai oleh list maupun grid
-    final List<Recipe> recipes = _cuisine == null
-        ? dummyRecipes
-        : dummyRecipes.where((r) => r.cuisine == _cuisine).toList();
-
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -44,10 +62,9 @@ class _HomePageState extends State<HomePage> {
             onPressed: () => setState(() => _isGrid = !_isGrid),
           ),
           const FavoriteBadgeButton(),
-          // tombol Pengaturan dari Latihan 1 Modul 6 tetap dipertahankan
           IconButton(
             tooltip: 'Pengaturan',
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const SettingsPage()),
@@ -55,25 +72,56 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // ListView horizontal di dalam Column wajib diberi tinggi
-          SizedBox(
-            height: 56,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              children: [
-                _buildChip('Semua', null),
-                for (final cuisine in _cuisines) _buildChip(cuisine, cuisine),
-              ],
-            ),
-          ),
-          // List atau grid mengisi sisa layar di dalam Column
-          Expanded(
-            child: _isGrid ? _buildGrid(recipes) : _buildList(recipes),
-          ),
-        ],
+      body: FutureBuilder<List<Recipe>>(
+        future: _recipesFuture,
+        builder: (context, snapshot) {
+          // 1. Loading state (data lama tetap tampil saat refresh)
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          // 2. Error state
+          if (snapshot.hasError) {
+            return ErrorView(
+              message: 'Gagal memuat resep.\n${snapshot.error}',
+              onRetry: _reload,
+            );
+          }
+          // 3. Data state
+          final recipes = snapshot.data ?? [];
+          if (recipes.isEmpty) {
+            return const Center(child: Text('Belum ada resep.'));
+          }
+
+          // Latihan 1 Modul 7: daftar cuisine diambil dari data hasil
+          // FutureBuilder (variabel recipes), bukan dari dummyRecipes
+          final cuisines = recipes.map((r) => r.cuisine).toSet().toList()..sort();
+          final filtered = _cuisine == null
+              ? recipes
+              : recipes.where((r) => r.cuisine == _cuisine).toList();
+
+          return Column(
+            children: [
+              SizedBox(
+                height: 56,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  children: [
+                    _buildChip('Semua', null),
+                    for (final cuisine in cuisines) _buildChip(cuisine, cuisine),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: _isGrid ? _buildGrid(filtered) : _buildList(filtered),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -92,9 +140,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildList(List<Recipe> recipes) {
     return ListView.builder(
       itemCount: recipes.length,
-      itemBuilder: (context, index) {
-        return RecipeTile(recipe: recipes[index]);
-      },
+      itemBuilder: (context, index) => RecipeTile(recipe: recipes[index]),
     );
   }
 
@@ -108,9 +154,7 @@ class _HomePageState extends State<HomePage> {
         childAspectRatio: 3 / 4, // lebar : tinggi
       ),
       itemCount: recipes.length,
-      itemBuilder: (context, index) {
-        return RecipeGridCard(recipe: recipes[index]);
-      },
+      itemBuilder: (context, index) => RecipeGridCard(recipe: recipes[index]),
     );
   }
 }
