@@ -25,6 +25,21 @@ class RecipeService {
         .toList();
   }
 
+  /// GET /recipes/search?q=... — mencari resep berdasarkan kata kunci (Latihan 1).
+  Future<List<Recipe>> searchRecipes(String query) async {
+    // replace(queryParameters) meng-encode spasi dan karakter khusus dengan benar
+    final uri = Uri.parse('$_baseUrl/recipes/search')
+        .replace(queryParameters: {'q': query});
+    final response = await _client.get(uri).timeout(_timeout);
+    _checkStatus(response);
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    final list = body['recipes'] as List<dynamic>;
+    return list
+        .map((item) => Recipe.fromJson(item as Map<String, dynamic>))
+        .toList();
+  }
+
   /// POST /recipes/add — mengirim resep baru.
   /// dummyjson hanya menyimulasikan penyimpanan: server mengembalikan
   /// data beserta id baru, tetapi resep tidak benar-benar tersimpan.

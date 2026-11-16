@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:resepku/models/recipe.dart';
 import 'package:resepku/pages/add_recipe_page.dart';
+import 'package:resepku/pages/search_page.dart';
 import 'package:resepku/pages/settings_page.dart';
 import 'package:resepku/services/recipe_service.dart';
 import 'package:resepku/widgets/error_view.dart';
@@ -73,6 +74,15 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         actions: [
+          // Latihan 1: membuka halaman pencarian
+          IconButton(
+            tooltip: 'Cari resep',
+            icon: const Icon(Icons.search),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SearchPage()),
+            ),
+          ),
           IconButton(
             tooltip: _isGrid ? 'Tampilan list' : 'Tampilan grid',
             icon: Icon(_isGrid ? Icons.view_list : Icons.grid_view),
