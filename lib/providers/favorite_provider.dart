@@ -38,4 +38,12 @@ class FavoriteProvider extends ChangeNotifier {
       await _store.insert(favorite);
     }
   }
+
+  Future<void> updateNote(int id, String note) async {
+    final index = _items.indexWhere((f) => f.recipe.id == id);
+    if (index < 0) return;
+    _items[index] = _items[index].copyWith(note: note);
+    notifyListeners();
+    await _store.updateNote(id, note);
+  }
 }

@@ -2,11 +2,12 @@ import 'package:path/path.dart' as p;
 import 'package:resepku/models/favorite.dart';
 import 'package:sqflite/sqflite.dart';
 
-/// Kontrak penyimpanan favorit (Create, Read, Delete; Update menyusul di Bagian C).
+/// Kontrak penyimpanan favorit (Create, Read, Update, Delete).
 /// FavoriteProvider hanya mengenal kontrak ini, bukan SQLite secara langsung.
 abstract interface class FavoriteStore {
   Future<List<Favorite>> getAll();
   Future<void> insert(Favorite favorite);
+  Future<void> updateNote(int id, String note);
   Future<void> delete(int id);
 }
 
@@ -20,7 +21,8 @@ class FavoriteDatabase implements FavoriteStore {
   static const _table = 'favorites';
 
   /// Naikkan angka ini setiap kali struktur tabel berubah.
-  static const _version = 1;
+  /// Versi 1: id, name, data, saved_at. Versi 2: tambah kolom note.
+  static const _version = 2;
 
   final DatabaseFactory _factory;
   final String? _path; // null = file resepku.db di folder database aplikasi
@@ -37,6 +39,7 @@ class FavoriteDatabase implements FavoriteStore {
       options: OpenDatabaseOptions(
         version: _version,
         onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
       ),
     );
   }
@@ -48,9 +51,19 @@ class FavoriteDatabase implements FavoriteStore {
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
         data TEXT NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
         saved_at INTEGER NOT NULL
       )
     ''');
+  }
+
+  // Dipanggil ketika file database sudah ada dengan versi lebih kecil
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+          "ALTER TABLE $_table ADD COLUMN note TEXT NOT NULL DEFAULT ''");
+    }
+    // if (oldVersion < 3) { ... } untuk perubahan berikutnya
   }
 
   // READ: semua favorit, yang terbaru disimpan di atas
@@ -69,6 +82,18 @@ class FavoriteDatabase implements FavoriteStore {
       _table,
       favorite.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  // UPDATE: hanya kolom note pada baris dengan id tertentu
+  @override
+  Future<void> updateNote(int id, String note) async {
+    final db = await _database;
+    await db.update(
+      _table,
+      {'note': note},
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 

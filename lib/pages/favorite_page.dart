@@ -1,29 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:resepku/models/favorite.dart';
+import 'package:resepku/pages/detail_page.dart';
 import 'package:resepku/providers/favorite_provider.dart';
 import 'package:resepku/widgets/recipe_image.dart';
 
 class FavoritePage extends StatelessWidget {
   const FavoritePage({super.key});
 
+  Future<void> _editNote(BuildContext context, Favorite item) async {
+    final note = await showDialog<String>(
+      context: context,
+      builder: (context) => _NoteDialog(initial: item.note),
+    );
+    // null = Batal ditekan; halaman juga dapat sudah ditutup selama menunggu
+    if (note == null || !context.mounted) return;
+    await context
+        .read<FavoriteProvider>()
+        .updateNote(item.recipe.id, note.trim());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Favorit Saya'),
-        // Modul 9 Bagian B: tombol Hapus semua (Latihan 2 Modul 6) dikomentari dulu
-        // karena FavoriteProvider versi database belum memiliki clear().
-        // clear() dibuat ulang pada Latihan 2 Modul 9.
-        // actions: [
-        //   Consumer<FavoriteProvider>(
-        //     builder: (context, favorite, child) => TextButton.icon(
-        //       icon: const Icon(Icons.delete_sweep_outlined),
-        //       label: const Text('Hapus semua'),
-        //       onPressed: favorite.count == 0 ? null : () => _confirmClear(context),
-        //     ),
-        //   ),
-        // ],
-      ),
+      appBar: AppBar(title: const Text('Favorit Saya')),
       body: Consumer<FavoriteProvider>(
         builder: (context, favorite, child) {
           if (favorite.count == 0) {
@@ -35,32 +35,26 @@ class FavoritePage extends StatelessWidget {
             );
           }
           final items = favorite.items;
-          // Latihan 2: separated menyisipkan Divider di antara item
           return ListView.separated(
             itemCount: items.length,
             separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, index) {
-              final item = items[index]; // diubah: kini Favorite
-              final recipe = item.recipe; // baru: resep di dalam Favorite
+              final item = items[index];
+              final recipe = item.recipe;
               return Dismissible(
-                // key unik dan stabil: id resep, bukan index
                 key: ValueKey(recipe.id),
-                direction: DismissDirection.endToStart, // geser ke kiri
+                direction: DismissDirection.endToStart,
                 background: Container(
                   color: Colors.red,
                   alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.only(right: 24),
                   child: const Icon(Icons.delete, color: Colors.white),
                 ),
                 onDismissed: (_) {
-                  favorite.toggle(recipe); // hapus dari favorit
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      SnackBar(
-                        content: Text('${recipe.name} dihapus dari favorit'),
-                      ),
-                    );
+                  favorite.toggle(recipe);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${recipe.name} dihapus dari favorit')),
+                  );
                 },
                 child: ListTile(
                   leading: ClipRRect(
@@ -72,10 +66,31 @@ class FavoritePage extends StatelessWidget {
                     ),
                   ),
                   title: Text(recipe.name),
-                  subtitle: Text(recipe.cuisine),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () => favorite.toggle(recipe),
+                  subtitle: Text(
+                    item.note.isEmpty ? 'Belum ada catatan' : item.note,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailPage(recipe: recipe),
+                    ),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: 'Catatan',
+                        icon: const Icon(Icons.edit_note),
+                        onPressed: () => _editNote(context, item),
+                      ),
+                      IconButton(
+                        tooltip: 'Hapus dari favorit',
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => favorite.toggle(recipe),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -85,29 +100,48 @@ class FavoritePage extends StatelessWidget {
       ),
     );
   }
+}
 
-  // Future<void> _confirmClear(BuildContext context) async {
-  //   final confirmed = await showDialog<bool>(
-  //     context: context,
-  //     builder: (dialogContext) => AlertDialog(
-  //       title: const Text('Hapus semua favorit?'),
-  //       content: const Text('Semua resep akan dihapus dari daftar favorit.'),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(dialogContext, false),
-  //           child: const Text('Batal'),
-  //         ),
-  //         FilledButton(
-  //           onPressed: () => Navigator.pop(dialogContext, true),
-  //           child: const Text('Hapus'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  //
-  //   // clear() hanya dipanggil kalau pengguna menekan "Hapus"
-  //   if (confirmed == true && context.mounted) {
-  //     context.read<FavoriteProvider>().clear();
-  //   }
-  // }
+/// Dialog catatan. StatefulWidget agar dapat membuat dan men-dispose
+/// TextEditingController miliknya sendiri.
+class _NoteDialog extends StatefulWidget {
+  const _NoteDialog({required this.initial});
+
+  final String initial;
+
+  @override
+  State<_NoteDialog> createState() => _NoteDialogState();
+}
+
+class _NoteDialogState extends State<_NoteDialog> {
+  late final _controller = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Catatan pribadi'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        maxLines: 3,
+        decoration: const InputDecoration(hintText: 'Contoh: kurangi garam'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Batal'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _controller.text),
+          child: const Text('Simpan'),
+        ),
+      ],
+    );
+  }
 }
