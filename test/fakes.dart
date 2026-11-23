@@ -35,6 +35,12 @@ class MemoryFavoriteStore implements FavoriteStore {
   Future<void> delete(int id) async {
     _rows.removeWhere((f) => f.recipe.id == id);
   }
+
+  // Latihan 2
+  @override
+  Future<void> deleteAll() async {
+    _rows.clear();
+  }
 }
 
 /// Favorit contoh: resep pertama di fixtures.dart (Classic Margherita Pizza).

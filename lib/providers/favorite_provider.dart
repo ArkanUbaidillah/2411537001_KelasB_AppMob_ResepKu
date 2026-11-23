@@ -46,4 +46,11 @@ class FavoriteProvider extends ChangeNotifier {
     notifyListeners();
     await _store.updateNote(id, note);
   }
+
+  // Latihan 2: hapus semua favorit dari memori dan database
+  Future<void> clear() async {
+    _items = [];
+    notifyListeners();
+    await _store.deleteAll();
+  }
 }

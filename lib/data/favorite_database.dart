@@ -9,6 +9,7 @@ abstract interface class FavoriteStore {
   Future<void> insert(Favorite favorite);
   Future<void> updateNote(int id, String note);
   Future<void> delete(int id);
+  Future<void> deleteAll(); // Latihan 2
 }
 
 /// Implementasi FavoriteStore dengan SQLite (package sqflite).
@@ -102,6 +103,13 @@ class FavoriteDatabase implements FavoriteStore {
   Future<void> delete(int id) async {
     final db = await _database;
     await db.delete(_table, where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Latihan 2 - DELETE tanpa where: semua baris dihapus, tabel tetap ada
+  @override
+  Future<void> deleteAll() async {
+    final db = await _database;
+    await db.delete(_table);
   }
 
   Future<void> close() async {
