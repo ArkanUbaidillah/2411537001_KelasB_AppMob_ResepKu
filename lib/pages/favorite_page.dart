@@ -98,8 +98,10 @@ class FavoritePage extends StatelessWidget {
                     ),
                   ),
                   title: Text(recipe.name),
+                  // Latihan 3: jumlah dimasak di baris pertama, catatan sesudahnya
                   subtitle: Text(
-                    item.note.isEmpty ? 'Belum ada catatan' : item.note,
+                    'Dimasak ${item.cookedCount} kali\n'
+                    '${item.note.isEmpty ? 'Belum ada catatan' : item.note}',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -112,6 +114,13 @@ class FavoritePage extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Latihan 3
+                      IconButton(
+                        tooltip: 'Sudah dimasak',
+                        icon: const Icon(Icons.restaurant),
+                        onPressed: () =>
+                            favorite.incrementCooked(item.recipe.id),
+                      ),
                       IconButton(
                         tooltip: 'Catatan',
                         icon: const Icon(Icons.edit_note),

@@ -36,6 +36,16 @@ class MemoryFavoriteStore implements FavoriteStore {
     _rows.removeWhere((f) => f.recipe.id == id);
   }
 
+  // Latihan 3
+  @override
+  Future<void> incrementCooked(int id) async {
+    final index = _rows.indexWhere((f) => f.recipe.id == id);
+    if (index >= 0) {
+      _rows[index] =
+          _rows[index].copyWith(cookedCount: _rows[index].cookedCount + 1);
+    }
+  }
+
   // Latihan 2
   @override
   Future<void> deleteAll() async {

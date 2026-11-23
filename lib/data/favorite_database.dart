@@ -8,6 +8,7 @@ abstract interface class FavoriteStore {
   Future<List<Favorite>> getAll();
   Future<void> insert(Favorite favorite);
   Future<void> updateNote(int id, String note);
+  Future<void> incrementCooked(int id); // Latihan 3
   Future<void> delete(int id);
   Future<void> deleteAll(); // Latihan 2
 }
@@ -23,7 +24,8 @@ class FavoriteDatabase implements FavoriteStore {
 
   /// Naikkan angka ini setiap kali struktur tabel berubah.
   /// Versi 1: id, name, data, saved_at. Versi 2: tambah kolom note.
-  static const _version = 2;
+  /// Versi 3 (Latihan 3): tambah kolom cooked_count.
+  static const _version = 3;
 
   final DatabaseFactory _factory;
   final String? _path; // null = file resepku.db di folder database aplikasi
@@ -53,6 +55,7 @@ class FavoriteDatabase implements FavoriteStore {
         name TEXT NOT NULL,
         data TEXT NOT NULL,
         note TEXT NOT NULL DEFAULT '',
+        cooked_count INTEGER NOT NULL DEFAULT 0,
         saved_at INTEGER NOT NULL
       )
     ''');
@@ -64,7 +67,11 @@ class FavoriteDatabase implements FavoriteStore {
       await db.execute(
           "ALTER TABLE $_table ADD COLUMN note TEXT NOT NULL DEFAULT ''");
     }
-    // if (oldVersion < 3) { ... } untuk perubahan berikutnya
+    // Latihan 3
+    if (oldVersion < 3) {
+      await db.execute(
+          'ALTER TABLE $_table ADD COLUMN cooked_count INTEGER NOT NULL DEFAULT 0');
+    }
   }
 
   // READ: semua favorit, yang terbaru disimpan di atas
@@ -95,6 +102,16 @@ class FavoriteDatabase implements FavoriteStore {
       {'note': note},
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  // Latihan 3 - UPDATE: tambah 1 langsung di SQL, tanpa membaca nilai lama dulu
+  @override
+  Future<void> incrementCooked(int id) async {
+    final db = await _database;
+    await db.rawUpdate(
+      'UPDATE $_table SET cooked_count = cooked_count + 1 WHERE id = ?',
+      [id],
     );
   }
 

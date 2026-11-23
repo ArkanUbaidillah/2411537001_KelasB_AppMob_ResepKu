@@ -32,6 +32,13 @@ Unit test (Modul 8 Latihan 3): `flutter test test/recipe_service_test.dart`
 | `modul8-latihan1` | Modul 8 Latihan 1: pencarian resep |
 | `modul8-latihan2` | Modul 8 Latihan 2: ubah nama (PUT) dan hapus (DELETE) |
 | `modul8-latihan3` | Modul 8 Latihan 3 (bonus): unit test dengan MockClient |
+| `modul9-A` | Modul 9 Bagian A: SettingsProvider (SharedPreferencesAsync) (Checkpoint 1) |
+| `modul9-B` | Modul 9 Bagian B: favorit di SQLite versi 1 (Checkpoint 2) |
+| `modul9-C` | Modul 9 Bagian C: catatan pribadi dan migrasi versi 2 (Checkpoint 3) |
+| `modul9-D` | Modul 9 Bagian D: widget test dan unit test |
+| `modul9-latihan1` | Modul 9 Latihan 1: urutan favorit tersimpan |
+| `modul9-latihan2` | Modul 9 Latihan 2: hapus semua favorit |
+| `modul9-latihan3` | Modul 9 Latihan 3 (bonus): migrasi versi 3 (cooked_count) |
 
 Untuk membuka kondisi aplikasi di satu langkah: `git checkout <tag>` lalu `flutter run`.
 Kembali ke versi terbaru: `git checkout main`.

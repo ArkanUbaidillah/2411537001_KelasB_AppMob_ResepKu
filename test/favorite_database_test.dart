@@ -85,6 +85,49 @@ void main() {
     expect(await db.getAll(), isEmpty);
   });
 
+  // Latihan 3
+  test('incrementCooked menambah cooked_count satu per satu', () async {
+    await db.insert(favRendang);
+    expect((await db.getAll()).single.cookedCount, 0);
+
+    await db.incrementCooked(1);
+    await db.incrementCooked(1);
+    expect((await db.getAll()).single.cookedCount, 2);
+  });
+
+  // Latihan 3
+  test('migrasi versi 2 ke 3 tidak menghapus data dan catatan', () async {
+    final dir = await Directory.systemTemp.createTemp('resepku_test_v2');
+    final path = p.join(dir.path, 'v2.db');
+
+    // Tabel versi 2 dibuat manual: sudah ada note, belum ada cooked_count
+    final old = await databaseFactoryFfi.openDatabase(
+      path,
+      options: OpenDatabaseOptions(
+        version: 2,
+        onCreate: (db, version) => db.execute(
+          "CREATE TABLE favorites (id INTEGER PRIMARY KEY, name TEXT NOT NULL, "
+          "data TEXT NOT NULL, note TEXT NOT NULL DEFAULT '', "
+          "saved_at INTEGER NOT NULL)",
+        ),
+      ),
+    );
+    final row = favRendang.copyWith(note: 'Kurangi garam').toMap();
+    await old.insert('favorites', {
+      for (final column in ['id', 'name', 'data', 'note', 'saved_at'])
+        column: row[column],
+    });
+    await old.close();
+
+    final upgraded = FavoriteDatabase(factory: databaseFactoryFfi, path: path);
+    final saved = (await upgraded.getAll()).single;
+    expect(saved.note, 'Kurangi garam'); // catatan lama tetap ada
+    expect(saved.cookedCount, 0); // kolom baru berisi DEFAULT 0
+
+    await upgraded.close();
+    await dir.delete(recursive: true);
+  });
+
   test('migrasi versi 1 ke 2 tidak menghapus data', () async {
     final dir = await Directory.systemTemp.createTemp('resepku_test');
     final path = p.join(dir.path, 'lama.db');

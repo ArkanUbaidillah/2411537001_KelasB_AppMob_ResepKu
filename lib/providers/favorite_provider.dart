@@ -53,4 +53,14 @@ class FavoriteProvider extends ChangeNotifier {
     notifyListeners();
     await _store.deleteAll();
   }
+
+  // Latihan 3: tombol "Sudah dimasak"
+  Future<void> incrementCooked(int id) async {
+    final index = _items.indexWhere((f) => f.recipe.id == id);
+    if (index < 0) return;
+    final item = _items[index];
+    _items[index] = item.copyWith(cookedCount: item.cookedCount + 1);
+    notifyListeners();
+    await _store.incrementCooked(id);
+  }
 }
