@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:resepku/models/favorite.dart';
 import 'package:resepku/pages/detail_page.dart';
 import 'package:resepku/providers/favorite_provider.dart';
+import 'package:resepku/providers/settings_provider.dart';
 import 'package:resepku/widgets/recipe_image.dart';
 
 class FavoritePage extends StatelessWidget {
@@ -22,8 +23,32 @@ class FavoritePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsProvider>();
+    final sort = settings.favoriteSort;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Favorit Saya')),
+      appBar: AppBar(
+        title: const Text('Favorit Saya'),
+        actions: [
+          // Latihan 1: pilihan urutan, tersimpan lewat SettingsProvider
+          PopupMenuButton<FavoriteSort>(
+            tooltip: 'Urutkan',
+            icon: const Icon(Icons.sort),
+            initialValue: sort,
+            onSelected: settings.setFavoriteSort,
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: FavoriteSort.newest,
+                child: Text('Terbaru disimpan'),
+              ),
+              PopupMenuItem(
+                value: FavoriteSort.name,
+                child: Text('Nama A–Z'),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: Consumer<FavoriteProvider>(
         builder: (context, favorite, child) {
           if (favorite.count == 0) {
@@ -34,7 +59,14 @@ class FavoritePage extends StatelessWidget {
               ),
             );
           }
-          final items = favorite.items;
+          // Latihan 1: urutkan SALINAN list, bukan list milik provider
+          final items = [...favorite.items];
+          if (sort == FavoriteSort.name) {
+            items.sort((a, b) => a.recipe.name
+                .toLowerCase()
+                .compareTo(b.recipe.name.toLowerCase()));
+          }
+          // FavoriteSort.newest: urutan dari provider sudah terbaru di atas
           return ListView.separated(
             itemCount: items.length,
             separatorBuilder: (context, index) => const Divider(height: 1),
