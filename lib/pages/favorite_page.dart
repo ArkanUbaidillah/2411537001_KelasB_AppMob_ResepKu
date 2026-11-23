@@ -11,17 +11,18 @@ class FavoritePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Favorit Saya'),
-        actions: [
-          // Consumer: tombol ikut rebuild saat jumlah favorit berubah
-          Consumer<FavoriteProvider>(
-            builder: (context, favorite, child) => TextButton.icon(
-              icon: const Icon(Icons.delete_sweep_outlined),
-              label: const Text('Hapus semua'),
-              // null = tombol nonaktif ketika daftar favorit kosong
-              onPressed: favorite.count == 0 ? null : () => _confirmClear(context),
-            ),
-          ),
-        ],
+        // Modul 9 Bagian B: tombol Hapus semua (Latihan 2 Modul 6) dikomentari dulu
+        // karena FavoriteProvider versi database belum memiliki clear().
+        // clear() dibuat ulang pada Latihan 2 Modul 9.
+        // actions: [
+        //   Consumer<FavoriteProvider>(
+        //     builder: (context, favorite, child) => TextButton.icon(
+        //       icon: const Icon(Icons.delete_sweep_outlined),
+        //       label: const Text('Hapus semua'),
+        //       onPressed: favorite.count == 0 ? null : () => _confirmClear(context),
+        //     ),
+        //   ),
+        // ],
       ),
       body: Consumer<FavoriteProvider>(
         builder: (context, favorite, child) {
@@ -39,7 +40,8 @@ class FavoritePage extends StatelessWidget {
             itemCount: items.length,
             separatorBuilder: (context, index) => const Divider(height: 1),
             itemBuilder: (context, index) {
-              final recipe = items[index];
+              final item = items[index]; // diubah: kini Favorite
+              final recipe = item.recipe; // baru: resep di dalam Favorite
               return Dismissible(
                 // key unik dan stabil: id resep, bukan index
                 key: ValueKey(recipe.id),
@@ -84,28 +86,28 @@ class FavoritePage extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmClear(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Hapus semua favorit?'),
-        content: const Text('Semua resep akan dihapus dari daftar favorit.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Hapus'),
-          ),
-        ],
-      ),
-    );
-
-    // clear() hanya dipanggil kalau pengguna menekan "Hapus"
-    if (confirmed == true && context.mounted) {
-      context.read<FavoriteProvider>().clear();
-    }
-  }
+  // Future<void> _confirmClear(BuildContext context) async {
+  //   final confirmed = await showDialog<bool>(
+  //     context: context,
+  //     builder: (dialogContext) => AlertDialog(
+  //       title: const Text('Hapus semua favorit?'),
+  //       content: const Text('Semua resep akan dihapus dari daftar favorit.'),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(dialogContext, false),
+  //           child: const Text('Batal'),
+  //         ),
+  //         FilledButton(
+  //           onPressed: () => Navigator.pop(dialogContext, true),
+  //           child: const Text('Hapus'),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  //
+  //   // clear() hanya dipanggil kalau pengguna menekan "Hapus"
+  //   if (confirmed == true && context.mounted) {
+  //     context.read<FavoriteProvider>().clear();
+  //   }
+  // }
 }

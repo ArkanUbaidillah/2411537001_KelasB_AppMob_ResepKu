@@ -48,4 +48,23 @@ class Recipe {
       instructions: List<String>.from(json['instructions'] as List? ?? const []),
     );
   }
+
+  /// Kebalikan fromJson: objek menjadi Map yang dapat di-jsonEncode.
+  /// Dipakai untuk menyimpan seluruh resep di database (Modul 9).
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'cuisine': cuisine,
+      'difficulty': difficulty,
+      'prepTimeMinutes': prepTimeMinutes,
+      'cookTimeMinutes': cookTimeMinutes,
+      'servings': servings,
+      'caloriesPerServing': caloriesPerServing,
+      'rating': rating,
+      'image': image,
+      'ingredients': ingredients,
+      'instructions': instructions,
+    };
+  }
 }

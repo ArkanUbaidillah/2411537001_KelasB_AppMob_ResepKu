@@ -14,6 +14,11 @@ dependencies:
   cached_network_image: '>=3.4.1 <5.0.0'
   http: ^1.6.0
   shared_preferences: ^2.5.0
+  sqflite: ^2.4.2
+  path: ^1.9.1
+  # SQLite versi komputer: sqflite tidak punya plugin Windows/Linux,
+  # sehingga aplikasi Windows memakai sqflite_common_ffi (lihat main.dart)
+  sqflite_common_ffi: ^2.3.6
 
 dev_dependencies:
   flutter_test:
